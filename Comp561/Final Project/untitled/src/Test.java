@@ -2,13 +2,24 @@
 import com.github.sh0nk.matplotlib4j.Plot;
 import com.github.sh0nk.matplotlib4j.PythonExecutionException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class Test
 {
+    public static void HashAdd(HashMap<Double,Double> h, Double key, Double val)
+    {
+        if (h.containsKey(key))
+        {
+            h.put(key, h.get(key) + val);
+        }
+        else
+        {
+            h.put(key, val);
+        }
+    }
     public static void Run(int testsToDo, boolean decay, double mutationAdjustement, int queryLength, ProbabilisticDatabase d, double gapProbabilitySequence, int iterations, int wordSize, double indexingThreshold, double ungappedExtensionThreshold,double delta, int gapPenalty, double safetyZero)
     {
         Random rand = new Random();
@@ -109,6 +120,107 @@ public class Test
         plt3.ylabel("Correct (1), Incorrect (0)");
         //plt1.xticks(iterList);
         //plt2.xticks(iterList);
+        try {
+            plt1.show();
+            plt2.show();
+            plt3.show();
+        }catch (PythonExecutionException e)
+        {
+            System.out.println("Failed to make plot \uD83D\uDE31");
+        }
+        catch (java.io.IOException e)
+        {
+            System.out.println("Failed to make plot \uD83D\uDE31");
+        }
+        catch (NullPointerException e)
+        {
+            System.out.println("No match \uD83D\uDE31");
+        }
+    }
+    public static void ReadAndRun(File f, ProbabilisticDatabase d, int iterations, int wordSize, double indexingThreshold, double ungappedExtensionThreshold, double delta, int gapPenalty, double safetyZero)
+    {
+        //Create list of sequences from file
+        ArrayList<Sequence> sequencesToTest = new ArrayList<>();
+        ArrayList<Integer> sequencesToTestIndex = new ArrayList<>();
+        ArrayList<Double> sequencesToTestProb = new ArrayList<>();
+        try {
+            Scanner testReader = new Scanner(f);
+            while (testReader.hasNextLine())
+            {
+                sequencesToTestProb.add(Double.parseDouble(testReader.nextLine()));
+                sequencesToTestIndex.add(Integer.valueOf(testReader.nextLine()));
+                sequencesToTest.add(new Sequence(testReader.nextLine()));
+            }
+            testReader.close();
+        }catch (FileNotFoundException e)
+        {
+            System.out.println("Could not find file \uD83D\uDE31");
+        }
+        //Run test for every sequence
+        HashMap<Double, Double> AccuracyPerProb = new HashMap<>();
+        HashMap<Double, Double> NumberOfSeqPerProb = new HashMap<>();
+        HashMap<Double,Double> IndexPerProb = new HashMap<>();
+        HashMap<Double,Double> UngappedPerProb = new HashMap<>();
+        Index i = new Index(d, wordSize);
+        for(int testNumber=0; testNumber<sequencesToTest.size()/3;testNumber++)
+        {
+            Sequence s = sequencesToTest.get(testNumber);
+            int Start = sequencesToTestIndex.get(testNumber);
+            int Stop = Start + s.size();
+            System.out.println("Test " + testNumber + " Start: " + Start + " Stop: " + Stop + " Prob: " + sequencesToTestProb.get(testNumber));
+            //Run tests
+            double positive=0;
+            double falsePositive=0;
+            String[] out = BLAST.ProbabiliticBlast(s, i, d, wordSize, indexingThreshold, ungappedExtensionThreshold, delta, iterations, gapPenalty, safetyZero);
+            if ((Double.valueOf(out[0]) >= (Double.valueOf(out[0]) - s.size() * sequencesToTestProb.get(testNumber))) && (Double.valueOf(out[0]) <= (Double.valueOf(out[0]) + s.size() * sequencesToTestProb.get(testNumber))) && !Arrays.equals(out,new String[]{"0", "0", "0", "0", "0", "0", "0"}))
+            {
+                positive += 1;
+            }
+            else
+            {
+                falsePositive +=1;
+            }
+            System.out.println("Word matches: " + out[5] + " Ungappped matches: " + out[6]);
+            System.out.println("P: " + positive + " F: " + falsePositive);
+            if (!Arrays.equals(out,new String[]{"0", "0", "0", "0", "0", "0", "0"})) {
+                System.out.println("Final Sequence Match:");
+                System.out.println(out[2]);
+                System.out.println(out[3]);
+                System.out.println(out[4]);
+            }
+            HashAdd(AccuracyPerProb, sequencesToTestProb.get(testNumber),positive);
+            HashAdd(NumberOfSeqPerProb, sequencesToTestProb.get(testNumber),1.);
+            HashAdd(IndexPerProb, sequencesToTestProb.get(testNumber),Double.valueOf(out[5]));
+            HashAdd(UngappedPerProb, sequencesToTestProb.get(testNumber),Double.valueOf(out[6]));
+        }
+        //Calculate average for each
+        // Print keys and values
+        ArrayList<Double> probValues = new ArrayList<>(NumberOfSeqPerProb.keySet());
+        ArrayList<Double> indexValues = new ArrayList<>();
+        ArrayList<Double> ungappedValues = new ArrayList<>();
+        ArrayList<Double> accuracyValues = new ArrayList<>();
+        for (double p : probValues)
+        {
+            accuracyValues.add(AccuracyPerProb.get(p) / NumberOfSeqPerProb.get(p));
+            indexValues.add(IndexPerProb.get(p) / NumberOfSeqPerProb.get(p));
+            ungappedValues.add(UngappedPerProb.get(p) / NumberOfSeqPerProb.get(p));
+        }
+
+        Plot plt1 = Plot.create();
+        Plot plt2 = Plot.create();
+        Plot plt3 = Plot.create();
+        plt1.plot().add(probValues, accuracyValues);
+        plt2.plot().add(probValues,indexValues);
+        plt3.plot().add(probValues,ungappedValues);
+        plt1.title("Accuracy");
+        plt2.title("Index Matches");
+        plt3.title("Ungapped Matches");
+        plt1.xlabel("Mutation Probability");
+        plt2.xlabel("Mutation Probability");
+        plt3.xlabel("Mutation Probability");
+        plt1.ylabel("Percentage Correct Match");
+        plt2.ylabel("Matches");
+        plt3.ylabel("Matches");
         try {
             plt1.show();
             plt2.show();

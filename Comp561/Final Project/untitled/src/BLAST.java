@@ -179,9 +179,9 @@ public class BLAST
                 //prob = calculateMatchScore(s.subSequence(bestStartS, bestStopS), d.subDatabase(bestStartD, bestStopD), Boolean.TRUE, safetyZero);
                 if (prob >= ungappedExtensionThreshold)
                 {
-                    System.out.println("Ungapped Extension Match Found \uD83E\uDDEC! Start Sequence: " + bestStartS + " Stop Sequence: " + bestStopS + " Start Database: " + bestStartD + " Stop Database: " + bestStopD + " Score: " + (prob));
+                    //System.out.println("Ungapped Extension Match Found \uD83E\uDDEC! Start Sequence: " + bestStartS + " Stop Sequence: " + bestStopS + " Start Database: " + bestStartD + " Stop Database: " + bestStopD + " Score: " + (prob));
                     //NW
-                    System.out.println("NW " + StartDB + " to " + StopDF);
+                    //System.out.println("NW " + StartDB + " to " + StopDF);
                     NWMatch.add(NeedlemanWunsch.NW(s.subSequence(0,s.size()), d.subDatabase(matches.get(m) - sequencePosition, matches.get(m) - sequencePosition + s.size()), StartDB, StopDF, gapPenalty));
                 }
                 else
