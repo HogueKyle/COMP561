@@ -3,12 +3,26 @@ import java.util.stream.IntStream;
 
 public class BLAST
 {
-    public static double calculateMatchScore(Sequence s, ProbabilisticDatabase d, Boolean operation)
+    public static double safeMultiply(double a, double b, double c)
+    {
+        if ((a == 0) && (b == 0))
+        {
+            return Math.log10(c);
+        } else if (b==0)
+        {
+            return a + Math.log10(c);
+        }
+        else
+        {
+            return a + Math.log10(b);
+        }
+    }
+    public static double calculateMatchScore(Sequence s, ProbabilisticDatabase d, Boolean operation, double safetyZero)
     {
         double score;
         if (operation)
         {
-            score = 1;
+            score = 0; // 1;
         }
         else
         {
@@ -20,7 +34,7 @@ public class BLAST
             {
                 if (operation)
                 {
-                    score *= d.getProbability(c);
+                    score = safeMultiply(score, d.getProbability(c), safetyZero);
                 }
                 else
                 {
@@ -31,7 +45,7 @@ public class BLAST
             {
                 if (operation)
                 {
-                    score *= (1 - d.getProbability(c)) / 3;
+                    score = safeMultiply(score, ((1 - d.getProbability(c)) / 3), safetyZero);
                 }
                 else
                 {
@@ -42,7 +56,7 @@ public class BLAST
         return score;
     }
 
-    public static double noisyScore(Sequence s, ProbabilisticDatabase d, int size, int iterations, ArrayList<Sequence> randomSequences)
+    public static double noisyScore(Sequence s, ProbabilisticDatabase d, int size, int iterations, ArrayList<Sequence> randomSequences, Boolean operation, double safetyZero)
     {
 
         double noise = 0;
@@ -51,25 +65,26 @@ public class BLAST
         {
             for (int i = 0; i < iterations; i++)
             {
-                noise += calculateMatchScore(randomSequences.get(i).subSequence(0,size), d, Boolean.FALSE);
+                noise += calculateMatchScore(randomSequences.get(i).subSequence(0,size), d, operation, safetyZero);
             }
         } else if (randomSequences.get(0).size() < size)
         {
             for (int i = 0; i < iterations; i++)
             {
                 randomSequences.get(i).addRNucleotide(size - randomSequences.get(i).size());
-                noise += calculateMatchScore(randomSequences.get(i), d, Boolean.FALSE);
+                noise += calculateMatchScore(randomSequences.get(i), d, operation, safetyZero);
             }
         }
         else
         {
             for (int i = 0; i < iterations; i++)
             {
-                noise += calculateMatchScore(randomSequences.get(i), d, Boolean.FALSE);
+                noise += calculateMatchScore(randomSequences.get(i), d, operation, safetyZero);
             }
         }
         noise /= iterations;
-        return calculateMatchScore(s, d, Boolean.FALSE)/noise;
+        return calculateMatchScore(s, d, operation, safetyZero)-noise;
+        //return Math.pow(10,calculateMatchScore(s, d, operation, safetyZero))/Math.pow(10,noise);
     }
 
     /**
@@ -83,7 +98,7 @@ public class BLAST
      * @param delta Stopping condition for ungapped extension
      * @param iterations Number of noise sequences to create to find a mean
      */
-    public static String[] ProbabiliticBlast(Sequence s, Index i, ProbabilisticDatabase d, int wordSize, double indexingThreshold, double ungappedExtensionThreshold, double delta, int iterations, double gapPenalty)
+    public static String[] ProbabiliticBlast(Sequence s, Index i, ProbabilisticDatabase d, int wordSize, double indexingThreshold, double ungappedExtensionThreshold, double delta, int iterations, double gapPenalty, double safetyZero)
     {
         int matchSize = 0;
         ArrayList<String[]> NWMatch = new ArrayList<>();
@@ -114,7 +129,7 @@ public class BLAST
                 int bestStopD = StopDF;
                 double prob = 0;
                 //Initial score
-                double initialScore = noisyScore(s.subSequence(StartSF, StopSF), d.subDatabase(StartDF, StopDF), StopDF - StartDF, iterations, randomSequence);
+                double initialScore = noisyScore(s.subSequence(StartSF, StopSF), d.subDatabase(StartDF, StopDF), StopDF - StartDF, iterations, randomSequence, Boolean.TRUE, safetyZero);
                 double bestScore = initialScore;
                 //Forward extension
                 do
@@ -127,7 +142,7 @@ public class BLAST
                         StopDF--;
                         break;
                     }
-                    prob = noisyScore(s.subSequence(StartSF, StopSF), d.subDatabase(StartDF, StopDF),StopDF - StartDF, iterations, randomSequence);
+                    prob = noisyScore(s.subSequence(StartSF, StopSF), d.subDatabase(StartDF, StopDF),StopDF - StartDF, iterations, randomSequence, Boolean.TRUE, safetyZero);
                     if (prob > bestScore)
                     {
                         bestScore = prob;
@@ -151,7 +166,7 @@ public class BLAST
                         StartDB++;
                         break;
                     }
-                    prob = noisyScore(s.subSequence(StartSB, StopSB), d.subDatabase(StartDB, StopDB),StopDB - StartDB, iterations, randomSequence);
+                    prob = noisyScore(s.subSequence(StartSB, StopSB), d.subDatabase(StartDB, StopDB),StopDB - StartDB, iterations, randomSequence, Boolean.TRUE, safetyZero);
                     if (prob > bestScore)
                     {
                         bestScore = prob;
@@ -160,7 +175,8 @@ public class BLAST
                     }
                 }while (prob >= bestScore - delta/*prob >= delta*/);
                 //Final best score
-                prob = calculateMatchScore(s.subSequence(bestStartS, bestStopS), d.subDatabase(bestStartD, bestStopD), Boolean.FALSE);
+                prob = noisyScore(s.subSequence(bestStartS, bestStopS), d.subDatabase(bestStartD, bestStopD),bestStopD - bestStartD, iterations, randomSequence, Boolean.TRUE, safetyZero);
+                //prob = calculateMatchScore(s.subSequence(bestStartS, bestStopS), d.subDatabase(bestStartD, bestStopD), Boolean.TRUE, safetyZero);
                 if (prob >= ungappedExtensionThreshold)
                 {
                     System.out.println("Ungapped Extension Match Found \uD83E\uDDEC! Start Sequence: " + bestStartS + " Stop Sequence: " + bestStopS + " Start Database: " + bestStartD + " Stop Database: " + bestStopD + " Score: " + (prob));
@@ -186,13 +202,15 @@ public class BLAST
             }
         }
         //Report results
-        System.out.println("Word matches: " + matchSize + " Ungappped matches: " + NWMatch.size());
         if (bestIndex != Integer.MIN_VALUE) {
-            return NWMatch.get(bestIndex);
+            String[] re = NWMatch.get(bestIndex);
+            re[5] = Integer.toString(matchSize);
+            re[6] = Integer.toString(NWMatch.size());
+            return re;
         }
         else
         {
-            return new String[]{"0", "0", "0", "0", "0"};
+            return new String[]{"0", "0", "0", "0", "0", "0", "0"};
         }
     }
 }

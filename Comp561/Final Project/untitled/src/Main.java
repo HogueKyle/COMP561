@@ -29,8 +29,9 @@ public class Main {
             }
             databaseReader.close();
             probabilityReader.close();
-            //Test.Run(3,0.05,100,d,0,10,10,3.5,80,1,-1);
-            Test.Run(1,0.0,100,d,0,10,10,0.1,80,1,-1);
+
+            //Test.Run(2,false,0.0,200,d,0.00,100,10,0.8,100,8,-1, 200);
+            Test.Run(2,false,0.0,200,d,0.05,100,10,0.8,70,8,-1, 200);
             //Same sequence
 
             //BLAST.ProbabiliticBlast(seq, i, d, 11, 0.5, 0.5, 5, 10);

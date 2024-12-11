@@ -44,7 +44,7 @@ public class Index
         ArrayList<Integer> matches = new ArrayList<Integer>();
         for(int x = 0; x < words.size(); x++)
         {
-            if (BLAST.calculateMatchScore(sequence, words.get(x), Boolean.TRUE) >= threshold)
+            if ((BLAST.calculateMatchScore(sequence, words.get(x), Boolean.TRUE, Double.MIN_VALUE)) >= (Math.log10(threshold)))
             {
                 matches.add(x);
             }

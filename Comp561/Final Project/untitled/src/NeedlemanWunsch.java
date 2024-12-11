@@ -101,7 +101,7 @@ public class NeedlemanWunsch
         System.out.println(alignmentS);
         System.out.println(alignmentT);
         System.out.println(X[s.size()-1][t.size()-1]);
-        String[] r = {Integer.toString(firstDiagonal), Integer.toString(lastDiagonal), Double.toString(X[s.size()-1][t.size()-1]), alignmentS, alignmentT};
+        String[] r = {Integer.toString(firstDiagonal), Integer.toString(lastDiagonal), Double.toString(X[s.size()-1][t.size()-1]), alignmentS, alignmentT, "", ""};
         return r;
     }
 }
