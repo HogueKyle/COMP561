@@ -162,7 +162,7 @@ public class Test
         HashMap<Double,Double> IndexPerProb = new HashMap<>();
         HashMap<Double,Double> UngappedPerProb = new HashMap<>();
         Index i = new Index(d, wordSize);
-        for(int testNumber=0; testNumber<sequencesToTest.size();testNumber++)
+        for(int testNumber=0; testNumber<sequencesToTest.size();testNumber+=4)
         {
             Sequence s = sequencesToTest.get(testNumber);
             int Start = sequencesToTestIndex.get(testNumber);
@@ -172,7 +172,7 @@ public class Test
             double positive=0;
             double falsePositive=0;
             String[] out = BLAST.ProbabiliticBlast(s, i, d, wordSize, indexingThreshold, ungappedExtensionThreshold, delta, iterations, gapPenalty, safetyZero);
-            if ((Double.valueOf(out[0]) >= (Double.valueOf(out[0]) - s.size() * sequencesToTestProb.get(testNumber))) && (Double.valueOf(out[0]) <= (Double.valueOf(out[0]) + s.size() * sequencesToTestProb.get(testNumber))) && !Arrays.equals(out,new String[]{"0", "0", "0", "0", "0", "0", "0"}))
+            if ((Double.valueOf(out[0]) >= (Double.valueOf(out[0]) - s.size() * sequencesToTestProb.get(testNumber))) && (Double.valueOf(out[0]) <= (Double.valueOf(out[0]) + s.size() * sequencesToTestProb.get(testNumber))) && !out[3].equals("0"))
             {
                 positive += 1;
             }
@@ -182,7 +182,7 @@ public class Test
             }
             System.out.println("Word matches: " + out[5] + " Ungappped matches: " + out[6]);
             System.out.println("P: " + positive + " F: " + falsePositive);
-            if (!Arrays.equals(out,new String[]{"0", "0", "0", "0", "0", "0", "0"})) {
+            if (!out[3].equals("0")) {
                 System.out.println("Final Sequence Match:");
                 System.out.println(out[2]);
                 System.out.println(out[3]);

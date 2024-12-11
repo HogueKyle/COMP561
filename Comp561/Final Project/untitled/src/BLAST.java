@@ -210,7 +210,7 @@ public class BLAST
         }
         else
         {
-            return new String[]{"0", "0", "0", "0", "0", "0", "0"};
+            return new String[]{"0", "0", "0", "0", "0", Integer.toString(matchSize), Integer.toString(NWMatch.size())};
         }
     }
 }
