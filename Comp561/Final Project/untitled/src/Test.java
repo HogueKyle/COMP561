@@ -162,7 +162,7 @@ public class Test
         HashMap<Double,Double> IndexPerProb = new HashMap<>();
         HashMap<Double,Double> UngappedPerProb = new HashMap<>();
         Index i = new Index(d, wordSize);
-        for(int testNumber=0; testNumber<sequencesToTest.size()/3;testNumber++)
+        for(int testNumber=0; testNumber<sequencesToTest.size();testNumber++)
         {
             Sequence s = sequencesToTest.get(testNumber);
             int Start = sequencesToTestIndex.get(testNumber);
