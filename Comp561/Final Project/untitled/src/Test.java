@@ -162,7 +162,7 @@ public class Test
         HashMap<Double,Double> IndexPerProb = new HashMap<>();
         HashMap<Double,Double> UngappedPerProb = new HashMap<>();
         Index i = new Index(d, wordSize);
-        for(int testNumber=0; testNumber<sequencesToTest.size();testNumber+=4)
+        for(int testNumber=0; testNumber<sequencesToTest.size();testNumber+=100)
         {
             Sequence s = sequencesToTest.get(testNumber);
             int Start = sequencesToTestIndex.get(testNumber);
@@ -199,6 +199,8 @@ public class Test
         ArrayList<Double> indexValues = new ArrayList<>();
         ArrayList<Double> ungappedValues = new ArrayList<>();
         ArrayList<Double> accuracyValues = new ArrayList<>();
+        Collections.sort(probValues);
+
         for (double p : probValues)
         {
             accuracyValues.add(AccuracyPerProb.get(p) / NumberOfSeqPerProb.get(p));
