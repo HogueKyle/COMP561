@@ -161,7 +161,9 @@ public class Test
         HashMap<Double, Double> NumberOfSeqPerProb = new HashMap<>();
         HashMap<Double,Double> IndexPerProb = new HashMap<>();
         HashMap<Double,Double> UngappedPerProb = new HashMap<>();
+        //Create index for database
         Index i = new Index(d, wordSize);
+        //Run test for each sequence. Skip by 100 due to runtime.
         for(int testNumber=0; testNumber<sequencesToTest.size();testNumber+=100)
         {
             Sequence s = sequencesToTest.get(testNumber);
@@ -194,7 +196,6 @@ public class Test
             HashAdd(UngappedPerProb, sequencesToTestProb.get(testNumber),Double.valueOf(out[6]));
         }
         //Calculate average for each
-        // Print keys and values
         ArrayList<Double> probValues = new ArrayList<>(NumberOfSeqPerProb.keySet());
         ArrayList<Double> indexValues = new ArrayList<>();
         ArrayList<Double> ungappedValues = new ArrayList<>();
@@ -207,7 +208,7 @@ public class Test
             indexValues.add(IndexPerProb.get(p) / NumberOfSeqPerProb.get(p));
             ungappedValues.add(UngappedPerProb.get(p) / NumberOfSeqPerProb.get(p));
         }
-
+        //Plot
         Plot plt1 = Plot.create();
         Plot plt2 = Plot.create();
         Plot plt3 = Plot.create();

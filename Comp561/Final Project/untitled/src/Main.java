@@ -28,16 +28,9 @@ public class Main {
 
             //Get sequences for test
             File testFile = new File("Comp561/Final Project/test_sequences.txt");
-
-
-
-
-
-
-
             //Test.Run(2,false,0.0,200,d,0.00,100,10,0.8,100,8,-1, 200);
             //Test.Run(2,false,0.0,200,d,0.05,100,10,0.8,70,8,-1, 200);
-            Test.ReadAndRun(testFile,d,10,11,0.85,150,3,-1,0.2);
+            Test.ReadAndRun(testFile,d,10,11,0.85,20,3,-1,0.2);
             //Same sequence
 
             //BLAST.ProbabiliticBlast(seq, i, d, 11, 0.5, 0.5, 5, 10);
